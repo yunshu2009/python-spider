@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-from tkinter.filedialog import askdirectory
 from MyQR.myqr import run
 from urllib import request, parse
 from bs4 import BeautifulSoup
@@ -10,10 +9,6 @@ import webbrowser
 import re
 import json
 import os
-import types
-import requests
-import time
-
 
 """
 类说明:爱奇艺、优酷等实现在线观看以及视频下载的类
