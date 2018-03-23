@@ -4,12 +4,14 @@ from contextlib import closing
 import requests, json, time, re, os, sys, time
 
 class DouYin(object):
-	def __init__(self):
+	def __init__(self, path):
 		"""
 		抖音App视频下载
 		"""
 		#SSL认证
-		pass
+		self.path = path
+		if not os.path.isdir(path):
+			os.mkdir(path)
 
 	def get_video_urls(self, user_id):
 		"""
@@ -101,8 +103,10 @@ class DouYin(object):
 		# user_id = input('请输入ID(例如13978338):')
 		user_id = 'sm666888'
 		video_names, video_urls, nickname = self.get_video_urls(user_id)
-		if nickname not in os.listdir():
-			os.mkdir(nickname)
+
+		path = self.path + nickname
+		if not os.path.isdir(path):
+			os.mkdir(path)
 		sys.stdout.write('视频下载中:\n')
 		for num in range(len(video_urls)):
 			print('  %s\n' % video_urls[num])
@@ -113,7 +117,7 @@ class DouYin(object):
 				video_name = video_names[num].replace('/', '')
 			else:
 				video_name = video_names[num]
-			self.video_downloader(video_url, os.path.join(nickname, video_name))
+			self.video_downloader(video_url, os.path.join(path, video_name))
 			print('')
 
 	def hello(self):
@@ -130,5 +134,6 @@ class DouYin(object):
 
 		
 if __name__ == '__main__':
-	douyin = DouYin()
+	path = os.path.dirname(os.path.realpath(__file__)) + '/videos/'
+	douyin = DouYin(path)
 	douyin.run()
