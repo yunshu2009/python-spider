@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from bs4 import BeautifulSoup
 from contextlib import closing
+from tqdm import tqdm
 import requests, json, re, os, sys, time
 
 
@@ -30,7 +31,12 @@ class DouYin(object):
         while unique_id != user_id:
             # 不显示https warning错误
             requests.packages.urllib3.disable_warnings()
-            search_url = 'https://api.amemv.com/aweme/v1/discover/search/?cursor=0&keyword=%s&count=10&type=1&retry_type=no_retry&iid=17900846586&device_id=34692364855&ac=wifi&channel=xiaomi&aid=1128&app_name=aweme&version_code=162&version_name=1.6.2&device_platform=android&ssmix=a&device_type=MI+5&device_brand=Xiaomi&os_api=24&os_version=7.0&uuid=861945034132187&openudid=dc451556fc0eeadb&manifest_version_code=162&resolution=1080*1920&dpi=480&update_version_code=1622' % user_id
+            search_url = 'https://api.amemv.com/aweme/v1/discover/search/?cursor=0&keyword=%s&count=10&type=1&' \
+                         'retry_type=no_retry&iid=17900846586&device_id=34692364855&ac=wifi&channel=xiaomi&' \
+                         'aid=1128&app_name=aweme&version_code=162&version_name=1.6.2&device_platform=android&ssmix=a&'\
+                         'device_type=MI+5&device_brand=Xiaomi&os_api=24&os_version=7.0&uuid=861945034132187&' \
+                         'openudid=dc451556fc0eeadb&manifest_version_code=162&resolution=1080*1920&dpi=480&' \
+                         'update_version_code=1622' % user_id
             req = requests.get(url=search_url, verify=False)
             html = json.loads(req.text)
             aweme_count = html['user_list'][0]['user_info']['aweme_count']
@@ -77,6 +83,8 @@ class DouYin(object):
             None
         """
         size = 0
+        # 下载流时，stream=True返回服务器的原始套接字响应，此时你可以访问 r.raw。使用 Response.iter_content 将会处理大量你直接使用
+        # Response.raw 不得不处理的
         with closing(requests.get(video_url, stream=True, verify=False)) as response:
             chunk_size = 1024
             content_size = int(response.headers['content-length'])
@@ -84,7 +92,9 @@ class DouYin(object):
                 sys.stdout.write('  [文件大小]:%0.2f MB\n' % (content_size / chunk_size / 1024))
 
                 with open(video_name, "wb") as file:
-                    for data in response.iter_content(chunk_size=chunk_size):
+                    # Tqdm 是一个快速，可扩展的Python进度条，可以在 Python 长循环中添加一个进度提示信息，用户只需要封装任意的迭代器
+                    # tqdm(iterator)。
+                    for data in tqdm(response.iter_content(chunk_size=chunk_size)):
                         file.write(data)
                         size += len(data)
                         file.flush()
